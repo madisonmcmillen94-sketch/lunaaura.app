@@ -1,7 +1,56 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { logOut } from '../lib/auth'
 
 const navItem =
   'px-3 py-2 text-sm tracking-wide rounded-full transition-colors'
+
+function AuthNav() {
+  const { user, isAccount, loading } = useAuth()
+  const navigate = useNavigate()
+
+  if (loading) return null
+
+  if (isAccount && user) {
+    return (
+      <div className="flex items-center gap-3 pl-3 ml-2 border-l border-white/10">
+        <span className="hidden sm:inline text-xs text-[#8e85a8] max-w-[10rem] truncate">
+          {user.email}
+        </span>
+        <button
+          onClick={async () => {
+            await logOut()
+            navigate('/')
+          }}
+          className="text-xs text-[#c9c2dd] hover:text-[#e9e4f5] underline decoration-[#8e85a8]/50"
+        >
+          Log out
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-1 pl-3 ml-2 border-l border-white/10">
+      <NavLink
+        to="/login"
+        className={({ isActive }) =>
+          `${navItem} ${isActive ? 'bg-[#caa6ff]/15 text-[#e9d9ff]' : 'text-[#c9c2dd] hover:bg-white/5'}`
+        }
+      >
+        Log in
+      </NavLink>
+      <NavLink
+        to="/signup"
+        className={({ isActive }) =>
+          `${navItem} ${isActive ? 'bg-[#caa6ff] text-[#1a0f2e] font-semibold' : 'bg-white/10 text-[#e9e4f5] hover:bg-white/15'}`
+        }
+      >
+        Sign up
+      </NavLink>
+    </div>
+  )
+}
 
 export default function Layout() {
   return (
@@ -46,6 +95,7 @@ export default function Layout() {
             >
               Learn
             </NavLink>
+            <AuthNav />
           </nav>
         </div>
       </header>
@@ -76,4 +126,3 @@ export default function Layout() {
     </div>
   )
 }
-
