@@ -3,6 +3,8 @@ import { getMoonInfo, getMoonSign, type MoonInfo } from '../lib/moon'
 import { getRetrogradePlanets } from '../lib/planets'
 import { fetchQuakeSummary, fetchGeomagneticSummary, type QuakeSummary, type GeomagneticSummary } from '../lib/earth'
 import { buildForecastCopy } from '../lib/guidance'
+import UpgradeGate from '../components/UpgradeGate'
+import PersonalTransits from '../components/PersonalTransits'
 
 const moonEmoji: Record<string, string> = {
   'New Moon': '🌑',
@@ -121,6 +123,16 @@ export default function Forecast() {
             </div>
           )}
         </div>
+      </section>
+
+      <section className="glow-card rounded-2xl p-6 mb-6">
+        <h2 className="text-lg font-display mb-4">🪐 Your personal transits</h2>
+        <UpgradeGate
+          required="plus"
+          teaser="See exactly which planets are touching your own chart today, each paired with a body-based practice for that specific activation."
+        >
+          <PersonalTransits />
+        </UpgradeGate>
       </section>
 
       <p className="text-xs text-[#8e85a8] text-center leading-relaxed">

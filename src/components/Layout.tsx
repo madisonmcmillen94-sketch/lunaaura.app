@@ -1,12 +1,13 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { logOut } from '../lib/auth'
+import { TIER_LABEL } from '../lib/tiers'
 
 const navItem =
   'px-3 py-2 text-sm tracking-wide rounded-full transition-colors'
 
 function AuthNav() {
-  const { user, isAccount, loading } = useAuth()
+  const { user, isAccount, tier, loading } = useAuth()
   const navigate = useNavigate()
 
   if (loading) return null
@@ -17,6 +18,16 @@ function AuthNav() {
         <span className="hidden sm:inline text-xs text-[#8e85a8] max-w-[10rem] truncate">
           {user.email}
         </span>
+        <NavLink
+          to="/pricing"
+          className={`text-xs rounded-full px-2.5 py-1 border ${
+            tier === 'free'
+              ? 'border-[#caa6ff]/40 text-[#e9d9ff] hover:bg-[#caa6ff]/10'
+              : 'border-[#caa6ff]/60 bg-[#caa6ff]/15 text-[#f1e8ff]'
+          }`}
+        >
+          {tier === 'free' ? 'Upgrade' : TIER_LABEL[tier]}
+        </NavLink>
         <button
           onClick={async () => {
             await logOut()
@@ -86,6 +97,14 @@ export default function Layout() {
               }
             >
               Chart
+            </NavLink>
+            <NavLink
+              to="/patterns"
+              className={({ isActive }) =>
+                `${navItem} ${isActive ? 'bg-[#caa6ff]/15 text-[#e9d9ff]' : 'text-[#c9c2dd] hover:bg-white/5'}`
+              }
+            >
+              Patterns
             </NavLink>
             <NavLink
               to="/learn"

@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
+import { getAuth, type Auth } from 'firebase-admin/auth'
 
 // Lazy init, matching the hard-won lesson from the Ori Codes build: eager
 // initialization of the Admin SDK at module load / build time can crash
@@ -7,6 +8,7 @@ import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 // time a request actually needs it.
 let app: App | null = null
 let db: Firestore | null = null
+let auth: Auth | null = null
 
 function getAdminApp(): App {
   if (app) return app
@@ -37,4 +39,10 @@ export function getAdminDb(): Firestore {
   if (db) return db
   db = getFirestore(getAdminApp())
   return db
+}
+
+export function getAdminAuth(): Auth {
+  if (auth) return auth
+  auth = getAuth(getAdminApp())
+  return auth
 }

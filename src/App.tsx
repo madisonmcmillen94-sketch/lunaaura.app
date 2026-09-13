@@ -9,6 +9,8 @@ import Learn from './pages/Learn'
 import ArticlePage from './pages/ArticlePage'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Patterns from './pages/Patterns'
+import Pricing from './pages/Pricing'
 
 export default function App() {
   return (
@@ -19,6 +21,8 @@ export default function App() {
           <Route path="/" element={<Forecast />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="/chart" element={<Chart />} />
+          <Route path="/patterns" element={<Patterns />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="/learn" element={<Learn />} />
           <Route path="/learn/:slug" element={<ArticlePage />} />
           <Route path="/login" element={<Login />} />

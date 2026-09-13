@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
 import { auth, db } from './firebase'
+import type { Tier } from './tiers'
 
 const USERS_COLLECTION = 'users'
 
@@ -17,6 +18,10 @@ export interface UserProfile {
   email: string | null
   createdAt: string | null
   onboardedAt: string | null
+  // Written only by the Stripe webhook (Admin SDK) -- Firestore rules block
+  // clients from writing these fields on their own /users/{uid} doc.
+  tier: Tier
+  stripeCustomerId: string | null
 }
 
 /**
@@ -87,6 +92,8 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
     email: data.email ?? null,
     createdAt: toIso(data.createdAt),
     onboardedAt: toIso(data.onboardedAt),
+    tier: (data.tier as Tier) ?? 'free',
+    stripeCustomerId: data.stripeCustomerId ?? null,
   }
 }
 

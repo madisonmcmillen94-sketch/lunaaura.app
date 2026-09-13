@@ -11,6 +11,22 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import { db, ensureAnonymousUser } from './firebase'
+import type { AspectName, AspectNature } from './transits'
+
+/**
+ * A compact snapshot of the tightest active transits at the moment a journal
+ * entry was saved. Storing this at write-time (rather than recomputing transits
+ * for past dates later) is what makes the patterns dashboard cheap: it's a
+ * pure aggregation over already-saved data, no server calls, no re-running
+ * astronomy-engine over history.
+ */
+export interface TransitSnapshotHit {
+  transitingPlanet: string
+  natalPoint: string
+  aspect: AspectName
+  nature: AspectNature
+  orb: number
+}
 
 export interface JournalEntry {
   id: string
@@ -20,6 +36,8 @@ export interface JournalEntry {
   bodyNotes: string
   freeform: string
   createdAt: string
+  // Present only when the entry was saved while signed in with a saved chart.
+  transitSnapshot: TransitSnapshotHit[] | null
 }
 
 const COLLECTION = 'journals'
@@ -43,6 +61,7 @@ export async function loadEntries(): Promise<JournalEntry[]> {
       bodyNotes: data.bodyNotes ?? '',
       freeform: data.freeform ?? '',
       createdAt,
+      transitSnapshot: Array.isArray(data.transitSnapshot) ? data.transitSnapshot : null,
     }
   })
 }

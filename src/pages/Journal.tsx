@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { getMoonInfo } from '../lib/moon'
-import { loadEntries, saveEntry, deleteEntry, type JournalEntry } from '../lib/journal'
+import { loadEntries, saveEntry, deleteEntry, type JournalEntry, type TransitSnapshotHit } from '../lib/journal'
+import { loadNatalChart } from '../lib/natalStorage'
+import { findTransits } from '../lib/transits'
 
 const moodWords = ['Calm', 'Foggy', 'Activated', 'Tender', 'Grounded', 'Restless', 'Clear', 'Heavy']
 
@@ -33,12 +35,37 @@ export default function Journal() {
     setSaving(true)
     try {
       const moon = getMoonInfo()
+
+      // Best-effort: if this account has a saved chart, snapshot today's
+      // tightest transits alongside the check-in so patterns can be found
+      // later without recomputing astronomy for past dates. A signed-out
+      // visitor or one without a chart just gets null here -- never blocks
+      // saving the journal entry itself.
+      let transitSnapshot: TransitSnapshotHit[] | null = null
+      try {
+        const chart = await loadNatalChart()
+        if (chart) {
+          transitSnapshot = findTransits(chart)
+            .slice(0, 6)
+            .map(({ transitingPlanet, natalPoint, aspect, nature, orb }) => ({
+              transitingPlanet,
+              natalPoint,
+              aspect,
+              nature,
+              orb: Math.round(orb * 100) / 100,
+            }))
+        }
+      } catch (e) {
+        console.error(e)
+      }
+
       await saveEntry({
         date: new Date().toISOString().slice(0, 10),
         moonPhase: moon.phaseName,
         moodWord: mood,
         bodyNotes,
         freeform,
+        transitSnapshot,
       })
       setBodyNotes('')
       setFreeform('')
