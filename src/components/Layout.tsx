@@ -31,6 +31,14 @@ export default function Layout() {
               Journal
             </NavLink>
             <NavLink
+              to="/chart"
+              className={({ isActive }) =>
+                `${navItem} ${isActive ? 'bg-[#caa6ff]/15 text-[#e9d9ff]' : 'text-[#c9c2dd] hover:bg-white/5'}`
+              }
+            >
+              Chart
+            </NavLink>
+            <NavLink
               to="/learn"
               className={({ isActive }) =>
                 `${navItem} ${isActive ? 'bg-[#caa6ff]/15 text-[#e9d9ff]' : 'text-[#c9c2dd] hover:bg-white/5'}`
@@ -68,3 +76,4 @@ export default function Layout() {
     </div>
   )
 }
+

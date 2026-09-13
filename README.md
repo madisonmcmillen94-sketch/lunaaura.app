@@ -22,14 +22,14 @@ with a Firestore-backed journal and a once-a-day AI-generated reading.
 ```bash
 npm install
 cp .env.local.example .env.local   # then fill in the Firebase client values below
-npm run dev       # dev server (the /api function won't run here — see note below)
+npm run dev       # dev server (the /api function won't run here -- see note below)
 npm run build     # production build -> dist/
 npm run preview   # serve the production build locally
 ```
 
 Note: `npm run dev` / `vite preview` don't run Vercel serverless functions,
 so `/api/forecast` will 404 locally and the page falls back to the
-rule-based (non-AI) reading automatically — that's expected, not a bug.
+rule-based (non-AI) reading automatically -- that's expected, not a bug.
 The AI reading only comes alive once deployed on Vercel with the env vars
 below set.
 
@@ -43,8 +43,10 @@ Already configured in that project:
 - **Anonymous** sign-in is enabled (Authentication → Sign-in method).
 - Firestore **rules** were published covering the `journals` collection
   (each entry readable/writable only by the anonymous user who owns it,
-  matched on a `userId` field) and the `forecasts` collection (public read,
-  no client writes — only the server's Admin SDK can write it).
+  matched on a `userId` field), the `forecasts` collection (public read,
+  no client writes -- only the server's Admin SDK can write it), and the
+  `natalCharts` collection (one doc per user, keyed by their own uid --
+  readable/writable only by that same user).
 
 If you ever recreate the project, you need those same three things:
 Firestore enabled, Anonymous auth enabled, and rules that include:
@@ -58,6 +60,9 @@ match /forecasts/{day} {
   allow read: if true;
   allow write: if false;
 }
+match /natalCharts/{uid} {
+  allow read, write: if request.auth != null && request.auth.uid == uid;
+}
 ```
 
 ### 2. Environment variables
@@ -66,7 +71,7 @@ Copy `.env.local.example` to `.env.local` for local dev, and set the same
 names in **Vercel → Project Settings → Environment Variables** for
 production. Two different trust levels:
 
-**Client-side (safe to expose — these are public identifiers, not secrets):**
+**Client-side (safe to expose -- these are public identifiers, not secrets):**
 From Firebase console → ⚙️ Project settings → General → Your apps → the web
 app → SDK setup and configuration.
 ```
@@ -78,9 +83,9 @@ VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
 ```
 
-**Server-only (real secrets — set in Vercel, never in a `VITE_` var, never in chat):**
+**Server-only (real secrets -- set in Vercel, never in a `VITE_` var, never in chat):**
 From Firebase console → ⚙️ Project settings → **Service accounts** →
-Generate new private key (downloads a JSON file — copy the three fields out
+Generate new private key (downloads a JSON file -- copy the three fields out
 of it):
 ```
 FIREBASE_PROJECT_ID
@@ -96,7 +101,7 @@ OPENAI_API_KEY
 
 `/api/forecast` checks Firestore for today's cached reading before calling
 OpenAI at all. If it's already there, it returns the cache and never touches
-the OpenAI API. So the call volume is **~1 per day, period** — not per
+the OpenAI API. So the call volume is **~1 per day, period** -- not per
 visitor. At that rate, a `$100` credit balance lasts a very long time even
 with real traffic. If you ever want a hard ceiling anyway, OpenAI lets you
 set a monthly budget limit on the API key itself at platform.openai.com →
@@ -105,7 +110,7 @@ Settings → Limits.
 ## Getting this into GitHub / Vercel
 
 This folder has no `.git` yet. Repo `madisonmcmillen94-sketch/lunaaura.app`
-is already created and empty on GitHub — push into that one:
+is already created and empty on GitHub -- push into that one:
 
 1. Open a Codespace on that repo (or clone it locally).
 2. Copy all files from this project into the repo folder (or upload+unzip
@@ -127,7 +132,7 @@ is already created and empty on GitHub — push into that one:
 ## Important: this will NOT automatically inherit the old LunaAura channel's Google ranking
 
 Search ranking is tied to a **domain/URL**, not a brand name. A brand-new
-site — even with the exact same name — starts with no ranking history of
+site -- even with the exact same name -- starts with no ranking history of
 its own. To actually benefit from LunaAura's past search visibility, you'd
 need one of:
 
@@ -139,14 +144,14 @@ need one of:
   start) that Google indexes and ranks on its own merits over time.
 
 If the plan is "relaunch LunaAura content on YouTube and link to this
-site," that's the fastest real path to traffic — search ranking for a brand
+site," that's the fastest real path to traffic -- search ranking for a brand
 new site typically takes weeks to months regardless.
 
 ## Honesty note on the content itself
 
 The Forecast and Learn copy (and the AI prompt in `/api/forecast.ts`) are
 written to be clear about what's real astronomy/geophysics (moon phases,
-retrogrades, earthquakes, geomagnetic storms — all genuinely measured)
+retrogrades, earthquakes, geomagnetic storms -- all genuinely measured)
 versus what's intuitive/spiritual framing (that these things affect *your*
 nervous system specifically). Keeping that line visible is both more honest
 and lower-risk than presenting it as established science.
