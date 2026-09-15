@@ -90,8 +90,8 @@ function calcAscendant(date: Date, latitudeDeg: number, longitudeDeg: number): n
   const theta = localSiderealTimeDeg(date, longitudeDeg) * DEG2RAD
   const eps = trueObliquityDeg(date) * DEG2RAD
   const phi = latitudeDeg * DEG2RAD
-  const y = -Math.cos(theta)
-  const x = Math.sin(eps) * Math.tan(phi) + Math.cos(eps) * Math.sin(theta)
+  const y = Math.cos(theta)
+  const x = -(Math.sin(eps) * Math.tan(phi) + Math.cos(eps) * Math.sin(theta))
   const asc = Math.atan2(y, x) * RAD2DEG
   return normalizeDegrees(asc)
 }
