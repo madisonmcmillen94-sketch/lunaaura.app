@@ -86,3 +86,124 @@ export function findTransitMoodPatterns(entries: JournalEntry[]): TransitMoodPat
   // Most pronounced (highest share) first; ties broken by larger sample size.
   return patterns.sort((a, b) => b.topMood.pct - a.topMood.pct || b.totalEntries - a.totalEntries)
 }
+
+export interface MoonPhaseMoodPattern {
+  moonPhase: string
+  totalEntries: number // how many logged entries fell during this moon phase
+  topMood: MoodTally
+}
+
+/**
+ * Same idea as findTransitMoodPatterns, but grouped by moon phase instead of
+ * transit. Every entry already has a moonPhase (no saved chart required), so
+ * this works for anyone who's logged a handful of check-ins -- unlike the
+ * transit patterns above, which need a saved natal chart on file.
+ */
+export function findMoonPhaseMoodPatterns(entries: JournalEntry[]): MoonPhaseMoodPattern[] {
+  const groups = new Map<string, { moods: Map<string, number>; total: number }>()
+
+  for (const entry of entries) {
+    if (!entry.moonPhase) continue
+    if (!groups.has(entry.moonPhase)) {
+      groups.set(entry.moonPhase, { moods: new Map(), total: 0 })
+    }
+    const g = groups.get(entry.moonPhase)!
+    g.total += 1
+    g.moods.set(entry.moodWord, (g.moods.get(entry.moodWord) ?? 0) + 1)
+  }
+
+  const patterns: MoonPhaseMoodPattern[] = []
+  for (const [moonPhase, g] of groups) {
+    if (g.total < MIN_SAMPLE) continue
+    let topWord = ''
+    let topCount = 0
+    for (const [word, count] of g.moods) {
+      if (count > topCount) {
+        topWord = word
+        topCount = count
+      }
+    }
+    patterns.push({
+      moonPhase,
+      totalEntries: g.total,
+      topMood: { word: topWord, count: topCount, pct: topCount / g.total },
+    })
+  }
+
+  return patterns.sort((a, b) => b.topMood.pct - a.topMood.pct || b.totalEntries - a.totalEntries)
+}
+
+export interface StreakStats {
+  currentStreak: number // consecutive logged days ending today or yesterday (0 if the trail is broken)
+  longestStreak: number
+  totalEntries: number
+  firstEntryDate: string | null // ISO date (YYYY-MM-DD) of the earliest check-in
+  daysSinceFirstEntry: number
+}
+
+const DAY_MS = 86400000
+
+function isoDateNDaysAgo(n: number): string {
+  const d = new Date()
+  d.setUTCHours(0, 0, 0, 0)
+  d.setUTCDate(d.getUTCDate() - n)
+  return d.toISOString().slice(0, 10)
+}
+
+/**
+ * Turns raw entries into the "journey" numbers shown on the free Journal
+ * page: how many days in a row, the best run ever, how long they've been at
+ * this, and the total count. One entry per date is enough to keep a streak
+ * alive even if someone logs twice in one day.
+ */
+export function computeStreakStats(entries: JournalEntry[]): StreakStats {
+  if (entries.length === 0) {
+    return { currentStreak: 0, longestStreak: 0, totalEntries: 0, firstEntryDate: null, daysSinceFirstEntry: 0 }
+  }
+
+  const uniqueDates = [...new Set(entries.map((e) => e.date))].sort()
+
+  let longestStreak = 1
+  let run = 1
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const prev = new Date(`${uniqueDates[i - 1]}T00:00:00Z`).getTime()
+    const curr = new Date(`${uniqueDates[i]}T00:00:00Z`).getTime()
+    run = curr - prev === DAY_MS ? run + 1 : 1
+    if (run > longestStreak) longestStreak = run
+  }
+
+  const dateSet = new Set(uniqueDates)
+  const today = isoDateNDaysAgo(0)
+  const yesterday = isoDateNDaysAgo(1)
+  let currentStreak = 0
+  if (dateSet.has(today) || dateSet.has(yesterday)) {
+    let cursorDays = dateSet.has(today) ? 0 : 1
+    while (dateSet.has(isoDateNDaysAgo(cursorDays))) {
+      currentStreak += 1
+      cursorDays += 1
+    }
+  }
+
+  const firstEntryDate = uniqueDates[0]
+  const daysSinceFirstEntry = Math.floor((Date.now() - new Date(`${firstEntryDate}T00:00:00Z`).getTime()) / DAY_MS)
+
+  return { currentStreak, longestStreak, totalEntries: entries.length, firstEntryDate, daysSinceFirstEntry }
+}
+
+export const MILESTONE_THRESHOLDS = [7, 30, 100, 365] as const
+
+export interface Milestone {
+  threshold: number
+  label: string
+  achieved: boolean
+}
+
+/** Simple total-check-ins milestones, in ascending order. */
+export function computeMilestones(entries: JournalEntry[]): Milestone[] {
+  const total = entries.length
+  return MILESTONE_THRESHOLDS.map((threshold) => ({
+    threshold,
+    label: `${threshold} check-ins`,
+    achieved: total >= threshold,
+  }))
+}
