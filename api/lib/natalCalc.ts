@@ -2,7 +2,15 @@
 // endpoint. Kept in sync with src/lib/natal.ts (same formulas, same fix for
 // the Ascendant sign error). Duplicated rather than imported so the admin
 // API has no dependency on the client bundle.
-import * as Astronomy from 'astronomy-engine'
+// Import the package's explicit CJS entry point rather than the bare
+// specifier. The bare `astronomy-engine` specifier resolves (via its
+// "exports" map's "import" condition) to the ESM build, but Vercel's
+// serverless bundler wraps this function as CommonJS and calls require()
+// on it anyway, which crashes with `SyntaxError: Unexpected token 'export'`
+// on the ESM file's `export const ...` syntax. Pointing straight at the
+// package's CJS file (its "main") sidesteps that resolution entirely --
+// same class of ESM/CJS bundling mismatch as the jose/jwks-rsa fix.
+import * as Astronomy from 'astronomy-engine/astronomy.js'
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
