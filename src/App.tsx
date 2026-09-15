@@ -12,6 +12,7 @@ import Signup from './pages/Signup'
 import Patterns from './pages/Patterns'
 import Pricing from './pages/Pricing'
 import Admin from './pages/Admin'
+import Breathe from './pages/Breathe'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/" element={<Forecast />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="/chart" element={<Chart />} />
+          <Route path="/breathe" element={<Breathe />} />
           <Route path="/patterns" element={<Patterns />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/learn" element={<Learn />} />
