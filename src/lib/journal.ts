@@ -38,7 +38,16 @@ export interface JournalEntry {
   createdAt: string
   // Present only when the entry was saved while signed in with a saved chart.
   transitSnapshot: TransitSnapshotHit[] | null
+  // Set when this entry came from the quick Forecast-page check-in rather
+  // than the full Journal form -- null for a regular journal entry. Still
+  // counts toward streaks/patterns the same as any other entry.
+  checkInType: 'morning' | 'evening' | null
 }
+
+// Shared across the full Journal form and the quick Forecast check-in, so
+// mood tallies on the Patterns page stay one consistent vocabulary instead
+// of fragmenting into a separate word list per entry point.
+export const MOOD_WORDS = ['Calm', 'Foggy', 'Activated', 'Tender', 'Grounded', 'Restless', 'Clear', 'Heavy'] as const
 
 const COLLECTION = 'journals'
 
@@ -62,6 +71,7 @@ export async function loadEntries(): Promise<JournalEntry[]> {
       freeform: data.freeform ?? '',
       createdAt,
       transitSnapshot: Array.isArray(data.transitSnapshot) ? data.transitSnapshot : null,
+      checkInType: data.checkInType === 'morning' || data.checkInType === 'evening' ? data.checkInType : null,
     }
   })
 }
