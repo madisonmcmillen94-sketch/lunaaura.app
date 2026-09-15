@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getMoonInfo } from '../lib/moon'
-import { loadEntries, saveEntry, deleteEntry, type JournalEntry, type TransitSnapshotHit } from '../lib/journal'
+import { loadEntries, saveEntry, deleteEntry, MOOD_WORDS, type JournalEntry, type TransitSnapshotHit } from '../lib/journal'
 import { loadNatalChart } from '../lib/natalStorage'
 import { findTransits } from '../lib/transits'
 import { computeStreakStats, computeMilestones } from '../lib/patterns'
 
-const moodWords = ['Calm', 'Foggy', 'Activated', 'Tender', 'Grounded', 'Restless', 'Clear', 'Heavy']
+const moodWords = MOOD_WORDS
 
 /** Groups already-sorted (newest-first) entries under "March 2026"-style month headers. */
 function groupByMonth(entries: JournalEntry[]): { label: string; entries: JournalEntry[] }[] {
@@ -86,6 +86,7 @@ export default function Journal() {
         bodyNotes,
         freeform,
         transitSnapshot,
+        checkInType: null,
       })
       setBodyNotes('')
       setFreeform('')
