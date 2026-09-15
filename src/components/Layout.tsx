@@ -113,6 +113,14 @@ export default function Layout() {
               Chart
             </NavLink>
             <NavLink
+              to="/breathe"
+              className={({ isActive }) =>
+                `${navItem} ${isActive ? 'bg-[#caa6ff]/15 text-[#e9d9ff]' : 'text-[#c9c2dd] hover:bg-white/5'}`
+              }
+            >
+              Breathe
+            </NavLink>
+            <NavLink
               to="/patterns"
               className={({ isActive }) =>
                 `${navItem} ${isActive ? 'bg-[#caa6ff]/15 text-[#e9d9ff]' : 'text-[#c9c2dd] hover:bg-white/5'}`
