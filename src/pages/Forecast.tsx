@@ -5,6 +5,7 @@ import { fetchQuakeSummary, fetchGeomagneticSummary, type QuakeSummary, type Geo
 import { buildForecastCopy } from '../lib/guidance'
 import UpgradeGate from '../components/UpgradeGate'
 import PersonalTransits from '../components/PersonalTransits'
+import DailyCheckIn from '../components/DailyCheckIn'
 
 const moonEmoji: Record<string, string> = {
   'New Moon': '🌑',
@@ -83,6 +84,8 @@ export default function Forecast() {
           {moon.daysUntilFullOrNew.days === 1 ? '' : 's'}
         </p>
       </section>
+
+      <DailyCheckIn />
 
       <section className="glow-card rounded-2xl p-6 mb-6">
         <h2 className="text-lg font-display mb-3">{'✨'} Today's reading</h2>
