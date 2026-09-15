@@ -13,6 +13,7 @@ import Patterns from './pages/Patterns'
 import Pricing from './pages/Pricing'
 import Admin from './pages/Admin'
 import Breathe from './pages/Breathe'
+import Synastry from './pages/Synastry'
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/journal" element={<Journal />} />
           <Route path="/chart" element={<Chart />} />
           <Route path="/breathe" element={<Breathe />} />
+          <Route path="/synastry" element={<Synastry />} />
           <Route path="/patterns" element={<Patterns />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/learn" element={<Learn />} />
