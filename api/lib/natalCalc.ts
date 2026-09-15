@@ -2,15 +2,27 @@
 // endpoint. Kept in sync with src/lib/natal.ts (same formulas, same fix for
 // the Ascendant sign error). Duplicated rather than imported so the admin
 // API has no dependency on the client bundle.
-// Import the package's explicit CJS entry point rather than the bare
-// specifier. The bare `astronomy-engine` specifier resolves (via its
-// "exports" map's "import" condition) to the ESM build, but Vercel's
-// serverless bundler wraps this function as CommonJS and calls require()
-// on it anyway, which crashes with `SyntaxError: Unexpected token 'export'`
-// on the ESM file's `export const ...` syntax. Pointing straight at the
-// package's CJS file (its "main") sidesteps that resolution entirely --
-// same class of ESM/CJS bundling mismatch as the jose/jwks-rsa fix.
-import * as Astronomy from 'astronomy-engine/astronomy.js'
+// A plain `import * as Astronomy from 'astronomy-engine'` ends up, once
+// Vercel's serverless bundler gets through with it, as a CommonJS
+// require() of the package's ESM build (./esm/astronomy.js) -- which
+// crashes with `SyntaxError: Unexpected token 'export'`. Pointing directly
+// at the subpath `astronomy-engine/astronomy.js` doesn't work either: the
+// package's "exports" map only declares the root `.` entry, so Node
+// refuses the subpath with ERR_PACKAGE_PATH_NOT_EXPORTED.
+//
+// Forcing a real, explicit CJS require() via createRequire sidesteps both
+// failure modes: Node then applies the package's "require" export
+// condition itself (-> ./astronomy.js, the real CJS build), regardless of
+// what the bundler guessed. Same class of ESM/CJS bundling mismatch as the
+// jose/jwks-rsa fix elsewhere in this file's siblings.
+import { createRequire } from 'node:module'
+// Type-only import: erased at compile time, so it can't trigger the
+// runtime module-resolution problem above -- it only gives us `Body` as a
+// type name to annotate with below.
+import type { Body } from 'astronomy-engine'
+const require = createRequire(import.meta.url)
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Astronomy = require('astronomy-engine') as typeof import('astronomy-engine')
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -47,7 +59,7 @@ export interface NatalChart {
   houseSystem: 'whole-sign'
 }
 
-const BODIES: { name: string; body: Astronomy.Body }[] = [
+const BODIES: { name: string; body: Body }[] = [
   { name: 'Sun', body: Astronomy.Body.Sun },
   { name: 'Moon', body: Astronomy.Body.Moon },
   { name: 'Mercury', body: Astronomy.Body.Mercury },
@@ -77,13 +89,13 @@ export function birthInputToUtcDate(input: BirthInput): Date {
   return new Date(localAsUtcMillis + input.utcOffsetMinutes * 60000)
 }
 
-function eclipticLongitudeOf(body: Astronomy.Body, date: Date): number {
+function eclipticLongitudeOf(body: Body, date: Date): number {
   const geoVector = Astronomy.GeoVector(body, date, true)
   const ecl = Astronomy.Ecliptic(geoVector)
   return normalizeDegrees(ecl.elon)
 }
 
-function isRetrograde(body: Astronomy.Body, date: Date): boolean {
+function isRetrograde(body: Body, date: Date): boolean {
   const before = eclipticLongitudeOf(body, new Date(date.getTime() - 2 * 86400000))
   const after = eclipticLongitudeOf(body, new Date(date.getTime() + 2 * 86400000))
   let delta = after - before
