@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { loadEntries, type JournalEntry } from '../lib/journal'
-import { overallMoodStats, findTransitMoodPatterns } from '../lib/patterns'
+import { overallMoodStats, findTransitMoodPatterns, findMoonPhaseMoodPatterns } from '../lib/patterns'
 import UpgradeGate from '../components/UpgradeGate'
 
 const NATURE_LABEL: Record<string, string> = {
@@ -49,6 +49,7 @@ function PatternsContent() {
 
   const overall = overallMoodStats(entries)
   const transitPatterns = findTransitMoodPatterns(entries)
+  const moonPatterns = findMoonPhaseMoodPatterns(entries)
 
   return (
     <div className="space-y-8">
@@ -71,6 +72,32 @@ function PatternsContent() {
         <p className="text-xs text-[#8e85a8] mt-3">
           {overall.total} check-in{overall.total === 1 ? '' : 's'} logged.
         </p>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-display mb-2">Mood by moon phase</h2>
+        <p className="text-sm text-[#9a92b3] mb-4">
+          What you've actually logged during each moon phase, so far — your own record, not a general
+          rule.
+        </p>
+        {moonPatterns.length === 0 ? (
+          <p className="text-[#dcd6ec] text-sm leading-relaxed">
+            Not enough logged check-ins across different moon phases yet — keep checking in and this
+            will start filling in.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {moonPatterns.slice(0, 8).map((p, i) => (
+              <div key={i} className="glow-card rounded-xl p-4">
+                <p className="text-[#dcd6ec] text-sm leading-relaxed">
+                  During a <span className="text-[#e9d9ff] font-semibold">{p.moonPhase}</span>, you
+                  logged <span className="text-[#e9d9ff] font-semibold">"{p.topMood.word}"</span>{' '}
+                  {p.topMood.count} of {p.totalEntries} times ({Math.round(p.topMood.pct * 100)}%).
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section>
