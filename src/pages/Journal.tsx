@@ -28,7 +28,7 @@ function groupByMonth(entries: JournalEntry[]): { label: string; entries: Journa
 
 export default function Journal() {
   const [entries, setEntries] = useState<JournalEntry[]>([])
-  const [mood, setMood] = useState(moodWords[0])
+  const [mood, setMood] = useState<(typeof moodWords)[number]>(moodWords[0])
   const [bodyNotes, setBodyNotes] = useState('')
   const [freeform, setFreeform] = useState('')
   const [loading, setLoading] = useState(true)
