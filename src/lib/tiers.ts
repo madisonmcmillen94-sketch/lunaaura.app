@@ -54,6 +54,7 @@ export const FEATURES: TierFeature[] = [
   { label: 'Unlimited nervous-system journal', tiers: ['free', 'plus', 'all_access'] },
   { label: 'Full natal chart', tiers: ['free', 'plus', 'all_access'] },
   { label: 'Personal daily transits + somatic practice guidance', tiers: ['plus', 'all_access'] },
+  { label: 'Synastry — compare your chart with a friend or partner\'s', tiers: ['plus', 'all_access'] },
   { label: 'Your patterns dashboard (journal x transits, over time)', tiers: ['all_access'] },
 ]
 
