@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext'
 import { logOut } from '../lib/auth'
 import { TIER_LABEL } from '../lib/tiers'
 
+const ADMIN_UID = import.meta.env.VITE_ADMIN_UID as string | undefined
+
 const navItem =
   'px-3 py-2 text-sm tracking-wide rounded-full transition-colors'
 
@@ -18,6 +20,18 @@ function AuthNav() {
         <span className="hidden sm:inline text-xs text-[#8e85a8] max-w-[10rem] truncate">
           {user.email}
         </span>
+        {ADMIN_UID && user.uid === ADMIN_UID && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              `text-xs rounded-full px-2.5 py-1 border border-white/15 ${
+                isActive ? 'bg-white/10 text-[#e9e4f5]' : 'text-[#8e85a8] hover:text-[#e9e4f5]'
+              }`
+            }
+          >
+            Admin
+          </NavLink>
+        )}
         <NavLink
           to="/pricing"
           className={`text-xs rounded-full px-2.5 py-1 border ${
