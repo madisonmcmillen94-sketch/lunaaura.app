@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getAdminAuth, getAdminDb } from './lib/firebaseAdmin'
-import { getStripe } from './lib/stripe'
+import { getAdminAuth, getAdminDb } from './lib/firebaseAdmin.js'
+import { getStripe } from './lib/stripe.js'
 
 // Lets a subscriber manage or cancel their own subscription via Stripe's
 // hosted billing portal -- required so "cancel anytime" is actually true,

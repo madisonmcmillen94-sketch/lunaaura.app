@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import type Stripe from 'stripe'
-import { getAdminDb } from './lib/firebaseAdmin'
-import { getStripe, tierForPriceId } from './lib/stripe'
+import { getAdminDb } from './lib/firebaseAdmin.js'
+import { getStripe, tierForPriceId } from './lib/stripe.js'
 
 // Vercel's Node runtime needs the RAW request body (not the auto-parsed JSON)
 // to verify a Stripe webhook signature, so body parsing is disabled below

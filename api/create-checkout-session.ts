@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getAdminAuth, getAdminDb } from './lib/firebaseAdmin'
-import { getStripe, priceIdFor, type PaidTier, type Cadence } from './lib/stripe'
+import { getAdminAuth, getAdminDb } from './lib/firebaseAdmin.js'
+import { getStripe, priceIdFor, type PaidTier, type Cadence } from './lib/stripe.js'
 
 interface Body {
   idToken: string
