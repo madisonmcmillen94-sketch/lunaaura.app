@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { signUpWithEmail } from '../lib/auth'
 import { saveBirthInput } from '../lib/natalStorage'
 import type { BirthInput } from '../lib/natal'
+import PlaceSearch from '../components/PlaceSearch'
 
 const UTC_OFFSETS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
   value: h * 60,
@@ -10,7 +11,17 @@ const UTC_OFFSETS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
 }))
 
 function emptyInput(): BirthInput {
-  return { date: '', time: '', utcOffsetMinutes: 240, latitude: NaN, longitude: NaN, placeLabel: '' }
+  // Default to wherever they are now rather than a hard-coded US offset -- for
+  // most people their birth offset is the same or one hour off, which is a far
+  // better starting guess than someone else's timezone.
+  return {
+    date: '',
+    time: '',
+    utcOffsetMinutes: new Date().getTimezoneOffset(),
+    latitude: NaN,
+    longitude: NaN,
+    placeLabel: '',
+  }
 }
 
 export default function Signup() {
@@ -83,7 +94,7 @@ export default function Signup() {
       </h1>
       <p className="text-[#c9c2dd] text-center mb-8">
         {step === 1
-          ? 'Save your chart and journal to your own account, across devices.'
+          ? 'Your chart, your journal and your patterns — private to you, synced across your devices.'
           : "Enter these once for an accurate chart. If you don't know your birth time, use your best estimate."}
       </p>
 
@@ -100,7 +111,12 @@ export default function Signup() {
             <input
               type="email"
               value={email}
+              autoComplete="email"
+              inputMode="email"
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCreateAccount()
+              }}
               className="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm text-[#e9e4f5] outline-none focus:border-[#caa6ff]/60"
             />
           </div>
@@ -109,15 +125,21 @@ export default function Signup() {
             <input
               type="password"
               value={password}
+              autoComplete="new-password"
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCreateAccount()
+              }}
               className="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm text-[#e9e4f5] outline-none focus:border-[#caa6ff]/60"
             />
+            <p className="text-xs text-[#8e85a8] mt-1">At least 6 characters.</p>
           </div>
           <div>
             <label className="block text-sm text-[#b6acd1] mb-2">Confirm password</label>
             <input
               type="password"
               value={confirm}
+              autoComplete="new-password"
               onChange={(e) => setConfirm(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleCreateAccount()
@@ -175,15 +197,23 @@ export default function Signup() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-sm text-[#b6acd1] mb-2">Birth place (label)</label>
-            <input
-              value={form.placeLabel}
-              onChange={(e) => setForm((f) => ({ ...f, placeLabel: e.target.value }))}
-              placeholder="e.g. Chiefland, FL"
-              className="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm text-[#e9e4f5] placeholder:text-[#6b6280] outline-none focus:border-[#caa6ff]/60"
-            />
-          </div>
+          <PlaceSearch
+            onPick={(place) =>
+              setForm((f) => ({
+                ...f,
+                placeLabel: place.label,
+                latitude: place.latitude,
+                longitude: place.longitude,
+              }))
+            }
+          />
+
+          {form.placeLabel && Number.isFinite(form.latitude) && (
+            <p className="text-xs text-[#a9e6c8]">
+              ✓ Using {form.placeLabel}
+            </p>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-[#b6acd1] mb-2">Latitude</label>
@@ -209,8 +239,8 @@ export default function Signup() {
             </div>
           </div>
           <p className="text-xs text-[#8e85a8]">
-            Don't know your coordinates? Search your birth city on Google Maps, right-click the
-            pin — the latitude/longitude is at the top of the menu.
+            These fill in automatically when you pick a place above — you only need to touch them
+            if you want to fine-tune the exact spot.
           </p>
           <div className="flex gap-3">
             <button
