@@ -56,5 +56,6 @@ export const FEATURES: TierFeature[] = [
   { label: 'Personal daily transits + somatic practice guidance', tiers: ['plus', 'all_access'] },
   { label: 'Synastry — compare your chart with a friend or partner\'s', tiers: ['plus', 'all_access'] },
   { label: 'Your patterns dashboard (journal x transits, over time)', tiers: ['all_access'] },
+  { label: 'Ask your chart — an AI companion grounded in your real placements', tiers: ['all_access'] },
 ]
 
