@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { resolveTimeZone } from '../lib/timezone'
 
 /**
  * Birth-place lookup.
@@ -18,6 +19,8 @@ export interface PlaceMatch {
   label: string
   latitude: number
   longitude: number
+  /** IANA zone for these coordinates, so the birth offset can be derived. */
+  timeZone: string | null
 }
 
 interface NominatimResult {
@@ -49,7 +52,7 @@ export default function PlaceSearch({ onPick }: { onPick: (place: PlaceMatch) =>
         const lat = Number(r.lat)
         const lon = Number(r.lon)
         if (r.display_name && Number.isFinite(lat) && Number.isFinite(lon)) {
-          matches.push({ label: r.display_name, latitude: lat, longitude: lon })
+          matches.push({ label: r.display_name, latitude: lat, longitude: lon, timeZone: null })
         }
       }
 
@@ -123,9 +126,15 @@ export default function PlaceSearch({ onPick }: { onPick: (place: PlaceMatch) =>
               <button
                 type="button"
                 onClick={() => {
-                  onPick({ ...r, label: tidy(r.label) })
+                  const label = tidy(r.label)
                   setResults(null)
-                  setQuery(tidy(r.label))
+                  setQuery(label)
+                  // Hand over coordinates immediately so the form fills even if
+                  // the zone table is slow to load, then follow up with the zone.
+                  onPick({ ...r, label })
+                  void resolveTimeZone(r.latitude, r.longitude).then((timeZone) => {
+                    if (timeZone) onPick({ ...r, label, timeZone })
+                  })
                 }}
                 className="w-full text-left text-sm rounded-lg border border-white/10 px-3 py-2 text-[#c9c2dd] hover:bg-white/5 hover:border-[#caa6ff]/40 transition-colors"
               >
