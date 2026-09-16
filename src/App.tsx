@@ -15,6 +15,7 @@ import Pricing from './pages/Pricing'
 import Admin from './pages/Admin'
 import Breathe from './pages/Breathe'
 import Synastry from './pages/Synastry'
+import Companion from './pages/Companion'
 
 // Everything except signing in, signing up and the pricing page needs an
 // account. Pricing stays open so someone deciding whether to sign up can still
@@ -66,6 +67,14 @@ export default function App() {
             element={
               <RequireAccount>
                 <Synastry />
+              </RequireAccount>
+            }
+          />
+          <Route
+            path="/companion"
+            element={
+              <RequireAccount>
+                <Companion />
               </RequireAccount>
             }
           />
