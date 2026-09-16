@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getAdminAuth, getAdminDb } from './lib/firebaseAdmin.js'
-import { sendToSubscribers } from './lib/reminders.js'
+import { getAdminAuth, getAdminDb } from './_lib/firebaseAdmin.js'
+import { sendToSubscribers } from './_lib/reminders.js'
 
 /**
  * Reminder subscriptions live in their own collection, written only through

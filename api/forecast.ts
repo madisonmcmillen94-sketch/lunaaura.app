@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import OpenAI from 'openai'
-import { getAdminDb } from './lib/firebaseAdmin.js'
+import { getAdminDb } from './_lib/firebaseAdmin.js'
 
 // Generates ONE AI reading per calendar day (UTC), cached in Firestore.
 // Every visitor that day gets the same cached text -- this endpoint calls

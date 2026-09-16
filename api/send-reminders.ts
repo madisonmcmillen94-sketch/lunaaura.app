@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getAdminDb } from './lib/firebaseAdmin.js'
-import { PUSH_COLLECTION, REMINDER_COPY, sendToSubscribers, type ReminderPeriod } from './lib/reminders.js'
+import { getAdminDb } from './_lib/firebaseAdmin.js'
+import { PUSH_COLLECTION, REMINDER_COPY, sendToSubscribers, type ReminderPeriod } from './_lib/reminders.js'
 
 /**
  * Daily reminder fan-out, driven by the two cron entries in vercel.json.
