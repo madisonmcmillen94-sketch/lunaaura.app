@@ -4,6 +4,7 @@ import { loadEntries, saveEntry, deleteEntry, MOOD_WORDS, type JournalEntry, typ
 import { loadNatalChart } from '../lib/natalStorage'
 import { findTransits } from '../lib/transits'
 import { computeStreakStats, computeMilestones } from '../lib/patterns'
+import ReminderSettings from '../components/ReminderSettings'
 
 const moodWords = MOOD_WORDS
 
@@ -210,6 +211,8 @@ export default function Journal() {
           )}
         </div>
       )}
+
+      <ReminderSettings />
 
       <h2 className="text-xl font-display mb-4">Your entries</h2>
       {loading && <p className="text-[#8e85a8] text-sm">Loading your entries…</p>}
