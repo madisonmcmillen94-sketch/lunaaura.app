@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 import { getAuth, type Auth } from 'firebase-admin/auth'
+import { getMessaging, type Messaging } from 'firebase-admin/messaging'
 
 // Lazy init, matching the hard-won lesson from the Ori Codes build: eager
 // initialization of the Admin SDK at module load / build time can crash
@@ -9,6 +10,7 @@ import { getAuth, type Auth } from 'firebase-admin/auth'
 let app: App | null = null
 let db: Firestore | null = null
 let auth: Auth | null = null
+let messaging: Messaging | null = null
 
 function getAdminApp(): App {
   if (app) return app
@@ -79,4 +81,11 @@ export function getAdminAuth(): Auth {
   if (auth) return auth
   auth = getAuth(getAdminApp())
   return auth
+}
+
+/** Server-side FCM sender, used by the daily reminder cron. */
+export function getAdminMessaging(): Messaging {
+  if (messaging) return messaging
+  messaging = getMessaging(getAdminApp())
+  return messaging
 }
