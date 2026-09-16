@@ -1,9 +1,16 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { logInWithEmail, resetPassword } from '../lib/auth'
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // RequireAccount records the page someone was trying to reach before being
+  // sent here, so logging in returns them to it instead of dumping everyone on
+  // the chart page.
+  const from = (location.state as { from?: string } | null)?.from
+  const destination = from && from !== '/login' && from !== '/signup' ? from : '/chart'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -20,7 +27,7 @@ export default function Login() {
     setSubmitting(true)
     try {
       await logInWithEmail(email, password)
-      navigate('/chart')
+      navigate(destination)
     } catch (e) {
       const code = (e as { code?: string }).code
       if (

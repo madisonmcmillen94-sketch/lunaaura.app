@@ -7,6 +7,16 @@ import { useEffect, useRef, useState } from 'react'
 
 type PatternKey = 'box' | 'calm478' | 'simple'
 
+/** iOS routes Web Audio through the ringer switch, which trips people up constantly. */
+function isIos(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    // iPadOS 13+ reports as a Mac, distinguishable by touch support.
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
+}
+
 const PATTERNS: Record<PatternKey, { label: string; phases: { name: 'Inhale' | 'Hold' | 'Exhale'; seconds: number }[] }> = {
   calm478: {
     label: 'Calming 4-7-8',
@@ -60,6 +70,7 @@ export default function Breathe() {
   const [phaseSecondsLeft, setPhaseSecondsLeft] = useState(0)
   const [secondsElapsed, setSecondsElapsed] = useState(0)
   const [heldScale, setHeldScale] = useState(1)
+  const [audioBlocked, setAudioBlocked] = useState(false)
 
   const audioCtxRef = useRef<AudioContext | null>(null)
   const oscRef = useRef<OscillatorNode | null>(null)
@@ -69,20 +80,39 @@ export default function Breathe() {
   const totalSeconds = durationMin * 60
   const currentPhase = phases[phaseIndex]
 
-  function startTone(hz: number) {
+  async function startTone(hz: number) {
     const ctx = audioCtxRef.current ?? new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
     audioCtxRef.current = ctx
+
+    // Safari on iOS hands back a suspended context even when it was created
+    // inside a tap handler, and any browser suspends one whose tab has been
+    // backgrounded. Without this the whole graph runs correctly but silently,
+    // which is exactly the failure that looks like "the orb makes no sound".
+    if (ctx.state !== 'running') {
+      try {
+        await ctx.resume()
+      } catch (err) {
+        console.error('Could not start audio', err)
+      }
+    }
+
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = 'sine'
     osc.frequency.value = hz
-    gain.gain.value = 0
+
+    // Anchor the ramp with an explicit event: setting .value alone schedules
+    // nothing, so the fade-in has no defined starting point to ramp from.
+    const now = ctx.currentTime
+    gain.gain.setValueAtTime(0, now)
     osc.connect(gain)
     gain.connect(ctx.destination)
     osc.start()
-    gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 1.5)
+    gain.gain.linearRampToValueAtTime(volume, now + 1.5)
+
     oscRef.current = osc
     gainRef.current = gain
+    setAudioBlocked(ctx.state !== 'running')
   }
 
   function stopTone() {
@@ -109,11 +139,13 @@ export default function Breathe() {
     setHeldScale(1)
     setSecondsElapsed(0)
     setRunning(true)
-    if (freqHz) startTone(freqHz)
+    setAudioBlocked(false)
+    if (freqHz) void startTone(freqHz)
   }
 
   function handleStop() {
     setRunning(false)
+    setAudioBlocked(false)
     stopTone()
   }
 
@@ -270,6 +302,21 @@ export default function Breathe() {
               </button>
             ))}
           </div>
+
+          {freqHz !== null && isIos() && (
+            <p className="text-xs text-[#b6acd1] mt-2 leading-relaxed">
+              On iPhone and iPad, the side <span className="text-[#e9d9ff]">ringer switch</span> mutes
+              these tones along with everything else — if the orb is moving but you hear nothing,
+              flick it off silent and turn the volume up.
+            </p>
+          )}
+
+          {audioBlocked && (
+            <p className="text-xs text-[#ffb4b4] mt-2 leading-relaxed">
+              Your browser blocked the sound from starting. Stop the session and press Begin again —
+              that usually clears it.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-end gap-8">
