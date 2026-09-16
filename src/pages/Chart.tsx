@@ -4,6 +4,7 @@ import { loadNatalChart, saveBirthInput, clearNatalChart } from '../lib/natalSto
 import { findTransits, type TransitHit } from '../lib/transits'
 import { getSomaticGuidance } from '../lib/somatic'
 import { formatDegree } from '../lib/zodiac'
+import PlaceSearch from '../components/PlaceSearch'
 
 const UTC_OFFSETS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
   value: h * 60,
@@ -156,15 +157,20 @@ export default function Chart() {
             <p className="text-xs text-[#8e85a8] mt-1">{COMMON_OFFSET_HINTS}</p>
           </div>
 
-          <div>
-            <label className="block text-sm text-[#b6acd1] mb-2">Birth place (label)</label>
-            <input
-              value={form.placeLabel}
-              onChange={(e) => setForm((f) => ({ ...f, placeLabel: e.target.value }))}
-              placeholder="e.g. Chiefland, FL"
-              className="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm text-[#e9e4f5] placeholder:text-[#6b6280] outline-none focus:border-[#caa6ff]/60"
-            />
-          </div>
+          <PlaceSearch
+            onPick={(place) =>
+              setForm((f) => ({
+                ...f,
+                placeLabel: place.label,
+                latitude: place.latitude,
+                longitude: place.longitude,
+              }))
+            }
+          />
+
+          {form.placeLabel && Number.isFinite(form.latitude) && (
+            <p className="text-xs text-[#a9e6c8]">✓ Using {form.placeLabel}</p>
+          )}
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
@@ -191,8 +197,8 @@ export default function Chart() {
             </div>
           </div>
           <p className="text-xs text-[#8e85a8]">
-            Don't know your coordinates? Search your birth city on Google Maps, right-click the
-            pin, and the latitude/longitude will be at the top of the menu.
+            These fill in automatically when you pick a place above — you only need to touch them
+            to fine-tune the exact spot.
           </p>
 
           <div className="flex gap-3">

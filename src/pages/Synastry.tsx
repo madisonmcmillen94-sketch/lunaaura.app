@@ -6,6 +6,7 @@ import { loadNatalChart } from '../lib/natalStorage'
 import { findSynastryAspects, synastrySnapshot, type SynastryHit } from '../lib/synastry'
 import { formatDegree } from '../lib/zodiac'
 import UpgradeGate from '../components/UpgradeGate'
+import PlaceSearch from '../components/PlaceSearch'
 
 const UTC_OFFSETS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
   value: h * 60,
@@ -25,6 +26,7 @@ function emptyInput(): BirthInput {
 function SynastryContent() {
   const [myChart, setMyChart] = useState<NatalChart | null | 'loading'>('loading')
   const [form, setForm] = useState<BirthInput>(emptyInput())
+  const [birthPlace, setBirthPlace] = useState('')
   const [partnerChart, setPartnerChart] = useState<NatalChart | null>(null)
   const [hits, setHits] = useState<SynastryHit[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -132,6 +134,19 @@ function SynastryContent() {
             className="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm text-[#e9e4f5] placeholder:text-[#6b6280] outline-none focus:border-[#caa6ff]/60"
           />
         </div>
+
+        {/* placeLabel here is the partner's NAME, not a location, so this only
+            fills the coordinates and tracks the resolved place separately. */}
+        <PlaceSearch
+          onPick={(place) => {
+            setBirthPlace(place.label)
+            setForm((f) => ({ ...f, latitude: place.latitude, longitude: place.longitude }))
+          }}
+        />
+
+        {birthPlace && Number.isFinite(form.latitude) && (
+          <p className="text-xs text-[#a9e6c8]">✓ Born in {birthPlace}</p>
+        )}
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
