@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getAdminAuth, getAdminDb } from '../lib/firebaseAdmin.js'
-import { requireAdmin, AdminAuthError } from '../lib/adminAuth.js'
+import { getAdminAuth, getAdminDb } from '../_lib/firebaseAdmin.js'
+import { requireAdmin, AdminAuthError } from '../_lib/adminAuth.js'
 
 // GET /api/admin/lookup?email=someone@example.com
 // Looks a visitor up by email and returns their profile, saved chart summary,

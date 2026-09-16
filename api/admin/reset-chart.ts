@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getAdminDb } from '../lib/firebaseAdmin.js'
-import { requireAdmin, AdminAuthError } from '../lib/adminAuth.js'
-import { computeNatalChart, type BirthInput } from '../lib/natalCalc.js'
+import { getAdminDb } from '../_lib/firebaseAdmin.js'
+import { requireAdmin, AdminAuthError } from '../_lib/adminAuth.js'
+import { computeNatalChart, type BirthInput } from '../_lib/natalCalc.js'
 
 // POST /api/admin/reset-chart  { "uid": "..." }
 // Recomputes a visitor's saved chart from their original birth input using

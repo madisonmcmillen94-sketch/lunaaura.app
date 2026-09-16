@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getAdminDb } from '../lib/firebaseAdmin.js'
-import { requireAdmin, AdminAuthError } from '../lib/adminAuth.js'
+import { getAdminDb } from '../_lib/firebaseAdmin.js'
+import { requireAdmin, AdminAuthError } from '../_lib/adminAuth.js'
 
 // GET /api/admin/stats
 // Coarse, cheap counts for a founder-level snapshot -- not a full analytics
