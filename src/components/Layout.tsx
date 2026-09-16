@@ -18,6 +18,7 @@ const NAV_LINKS: { to: string; label: string; end?: boolean }[] = [
   { to: '/chart', label: 'Chart' },
   { to: '/synastry', label: 'Synastry' },
   { to: '/breathe', label: 'Breathe' },
+  { to: '/companion', label: 'Ask' },
   { to: '/patterns', label: 'Patterns' },
   { to: '/learn', label: 'Learn' },
 ]
