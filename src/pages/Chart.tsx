@@ -5,6 +5,7 @@ import { findTransits, type TransitHit } from '../lib/transits'
 import { getSomaticGuidance } from '../lib/somatic'
 import { formatDegree } from '../lib/zodiac'
 import PlaceSearch from '../components/PlaceSearch'
+import { utcOffsetMinutesFor, describeOffset } from '../lib/timezone'
 
 const UTC_OFFSETS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
   value: h * 60,
@@ -14,7 +15,14 @@ const UTC_OFFSETS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
 const COMMON_OFFSET_HINTS = 'Examples: Eastern Time is UTC-5 (standard) or UTC-4 (daylight, roughly mid-March–early November). Pacific Time is UTC-8 / UTC-7.'
 
 function emptyInput(): BirthInput {
-  return { date: '', time: '', utcOffsetMinutes: 240, latitude: NaN, longitude: NaN, placeLabel: '' }
+  return {
+    date: '',
+    time: '',
+    utcOffsetMinutes: new Date().getTimezoneOffset(),
+    latitude: NaN,
+    longitude: NaN,
+    placeLabel: '',
+  }
 }
 
 /** Picks the most relevant transits for the day: tightest orb, one per planet. */
@@ -35,6 +43,17 @@ export default function Chart() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<BirthInput>(emptyInput())
+  const [birthZone, setBirthZone] = useState<string | null>(null)
+
+  // Once we know the birth zone and the date, the offset is a fact rather than
+  // something to ask about -- including whether DST applied that day.
+  useEffect(() => {
+    if (!birthZone || !form.date) return
+    const derived = utcOffsetMinutesFor(birthZone, form.date, form.time)
+    if (derived !== null) {
+      setForm((f) => (f.utcOffsetMinutes === derived ? f : { ...f, utcOffsetMinutes: derived }))
+    }
+  }, [birthZone, form.date, form.time])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -154,18 +173,27 @@ export default function Chart() {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-[#8e85a8] mt-1">{COMMON_OFFSET_HINTS}</p>
+            {birthZone && form.date ? (
+              <p className="text-xs text-[#a9e6c8] mt-1">
+                Set automatically from your birth place: {describeOffset(form.utcOffsetMinutes)} (
+                {birthZone.replace(/_/g, ' ')}), with daylight saving for that date already worked
+                out.
+              </p>
+            ) : (
+              <p className="text-xs text-[#8e85a8] mt-1">{COMMON_OFFSET_HINTS}</p>
+            )}
           </div>
 
           <PlaceSearch
-            onPick={(place) =>
+            onPick={(place) => {
+              setBirthZone(place.timeZone)
               setForm((f) => ({
                 ...f,
                 placeLabel: place.label,
                 latitude: place.latitude,
                 longitude: place.longitude,
               }))
-            }
+            }}
           />
 
           {form.placeLabel && Number.isFinite(form.latitude) && (

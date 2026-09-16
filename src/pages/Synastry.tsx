@@ -7,6 +7,7 @@ import { findSynastryAspects, synastrySnapshot, type SynastryHit } from '../lib/
 import { formatDegree } from '../lib/zodiac'
 import UpgradeGate from '../components/UpgradeGate'
 import PlaceSearch from '../components/PlaceSearch'
+import { utcOffsetMinutesFor, describeOffset } from '../lib/timezone'
 
 const UTC_OFFSETS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
   value: h * 60,
@@ -20,13 +21,29 @@ const NATURE_LABEL: Record<string, string> = {
 }
 
 function emptyInput(): BirthInput {
-  return { date: '', time: '', utcOffsetMinutes: 240, latitude: NaN, longitude: NaN, placeLabel: '' }
+  return {
+    date: '',
+    time: '',
+    utcOffsetMinutes: new Date().getTimezoneOffset(),
+    latitude: NaN,
+    longitude: NaN,
+    placeLabel: '',
+  }
 }
 
 function SynastryContent() {
   const [myChart, setMyChart] = useState<NatalChart | null | 'loading'>('loading')
   const [form, setForm] = useState<BirthInput>(emptyInput())
   const [birthPlace, setBirthPlace] = useState('')
+  const [birthZone, setBirthZone] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!birthZone || !form.date) return
+    const derived = utcOffsetMinutesFor(birthZone, form.date, form.time)
+    if (derived !== null) {
+      setForm((f) => (f.utcOffsetMinutes === derived ? f : { ...f, utcOffsetMinutes: derived }))
+    }
+  }, [birthZone, form.date, form.time])
   const [partnerChart, setPartnerChart] = useState<NatalChart | null>(null)
   const [hits, setHits] = useState<SynastryHit[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -123,6 +140,12 @@ function SynastryContent() {
               </option>
             ))}
           </select>
+          {birthZone && form.date && (
+            <p className="text-xs text-[#a9e6c8] mt-1">
+              Set automatically from their birth place: {describeOffset(form.utcOffsetMinutes)},
+              daylight saving for that date included.
+            </p>
+          )}
         </div>
 
         <div>
@@ -140,6 +163,7 @@ function SynastryContent() {
         <PlaceSearch
           onPick={(place) => {
             setBirthPlace(place.label)
+            setBirthZone(place.timeZone)
             setForm((f) => ({ ...f, latitude: place.latitude, longitude: place.longitude }))
           }}
         />

@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { signUpWithEmail } from '../lib/auth'
 import { saveBirthInput } from '../lib/natalStorage'
 import type { BirthInput } from '../lib/natal'
 import PlaceSearch from '../components/PlaceSearch'
+import { utcOffsetMinutesFor, describeOffset } from '../lib/timezone'
 
 const UTC_OFFSETS = Array.from({ length: 27 }, (_, i) => i - 12).map((h) => ({
   value: h * 60,
@@ -33,6 +34,17 @@ export default function Signup() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState<BirthInput>(emptyInput())
+  const [birthZone, setBirthZone] = useState<string | null>(null)
+
+  // Derive the birth offset once we know the place and the date, so nobody
+  // has to recall whether daylight saving applied the day they were born.
+  useEffect(() => {
+    if (!birthZone || !form.date) return
+    const derived = utcOffsetMinutesFor(birthZone, form.date, form.time)
+    if (derived !== null) {
+      setForm((f) => (f.utcOffsetMinutes === derived ? f : { ...f, utcOffsetMinutes: derived }))
+    }
+  }, [birthZone, form.date, form.time])
 
   async function handleCreateAccount() {
     setError(null)
@@ -196,16 +208,23 @@ export default function Signup() {
                 </option>
               ))}
             </select>
+            {birthZone && form.date && (
+              <p className="text-xs text-[#a9e6c8] mt-1">
+                Set automatically from your birth place: {describeOffset(form.utcOffsetMinutes)},
+                daylight saving for that date included.
+              </p>
+            )}
           </div>
           <PlaceSearch
-            onPick={(place) =>
+            onPick={(place) => {
+              setBirthZone(place.timeZone)
               setForm((f) => ({
                 ...f,
                 placeLabel: place.label,
                 latitude: place.latitude,
                 longitude: place.longitude,
               }))
-            }
+            }}
           />
 
           {form.placeLabel && Number.isFinite(form.latitude) && (
