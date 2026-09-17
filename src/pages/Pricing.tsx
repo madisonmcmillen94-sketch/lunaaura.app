@@ -23,7 +23,7 @@ function pushToDataLayer(event: Record<string, unknown>) {
 }
 
 export default function Pricing() {
-  const { user, isAccount, tier, profile } = useAuth()
+  const { user, isAccount, tier, profile, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [cadence, setCadence] = useState<BillingCadence>('monthly')
@@ -77,9 +77,24 @@ export default function Pricing() {
         body: JSON.stringify({ idToken, tier: target, cadence }),
       })
       const data = await res.json()
-      if (data?.url) {
-        const pricing = PRICING.find((p) => p.tier === target)
-        const value = pricing ? (cadence === 'monthly' ? pricing.monthly : pricing.yearly) : 0
+      const pricing = PRICING.find((p) => p.tier === target)
+      const value = pricing ? (cadence === 'monthly' ? pricing.monthly : pricing.yearly) : 0
+
+      if (data?.alreadySubscribed) {
+        // Already on exactly this tier+cadence -- nothing to do, and
+        // importantly nothing to bill again.
+        setError("You're already on this plan.")
+      } else if (data?.updated) {
+        // They had an existing subscription and it was changed in place
+        // (e.g. Plus -> All Access) rather than a new one being created, so
+        // there's no Stripe-hosted checkout to redirect through. Route
+        // through the same ?checkout=success + sessionStorage mechanism the
+        // post-Stripe-redirect path uses, so the "subscribe" GA4 event fires
+        // exactly once from one place rather than being pushed here too.
+        sessionStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify({ tier: target, cadence, value }))
+        await refreshProfile()
+        navigate('/pricing?checkout=success')
+      } else if (data?.url) {
         pushToDataLayer({
           event: 'begin_checkout',
           subscription_tier: target,
