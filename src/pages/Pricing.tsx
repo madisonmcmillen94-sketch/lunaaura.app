@@ -1,10 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { auth } from '../lib/firebase'
 import { PRICING, FEATURES, TIER_LABEL, type BillingCadence, type Tier } from '../lib/tiers'
 
 const TIERS: Tier[] = ['free', 'plus', 'all_access']
+
+// sessionStorage key used to carry {tier, cadence, value} across the Stripe
+// redirect round trip, so the GA4 conversion event fired on return knows what
+// was actually purchased (Stripe's success_url doesn't include it).
+const PENDING_CHECKOUT_KEY = 'la_pending_checkout'
+
+declare global {
+  interface Window {
+    dataLayer?: unknown[]
+  }
+}
+
+function pushToDataLayer(event: Record<string, unknown>) {
+  window.dataLayer = window.dataLayer || []
+  window.dataLayer.push(event)
+}
 
 export default function Pricing() {
   const { user, isAccount, tier, profile } = useAuth()
@@ -14,8 +30,33 @@ export default function Pricing() {
   const [loadingTier, setLoadingTier] = useState<Tier | null>(null)
   const [portalLoading, setPortalLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const trackedResult = useRef(false)
 
   const checkoutResult = params.get('checkout')
+
+  // Fires once per landing on ?checkout=success|cancelled -- covers the whole
+  // funnel (begin_checkout fires in handleChoose below) so drop-off between
+  // "started checkout" and "actually subscribed" is visible in GA4.
+  useEffect(() => {
+    if (!checkoutResult || trackedResult.current) return
+    trackedResult.current = true
+
+    if (checkoutResult === 'success') {
+      const raw = sessionStorage.getItem(PENDING_CHECKOUT_KEY)
+      const pending = raw ? (JSON.parse(raw) as { tier: Tier; cadence: BillingCadence; value: number }) : null
+      pushToDataLayer({
+        event: 'subscribe',
+        subscription_tier: pending?.tier ?? 'unknown',
+        subscription_cadence: pending?.cadence ?? 'unknown',
+        currency: 'USD',
+        value: pending?.value ?? 0,
+      })
+      sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
+    } else if (checkoutResult === 'cancelled') {
+      pushToDataLayer({ event: 'checkout_cancelled' })
+      sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
+    }
+  }, [checkoutResult])
 
   async function handleChoose(target: Tier) {
     setError(null)
@@ -37,6 +78,16 @@ export default function Pricing() {
       })
       const data = await res.json()
       if (data?.url) {
+        const pricing = PRICING.find((p) => p.tier === target)
+        const value = pricing ? (cadence === 'monthly' ? pricing.monthly : pricing.yearly) : 0
+        pushToDataLayer({
+          event: 'begin_checkout',
+          subscription_tier: target,
+          subscription_cadence: cadence,
+          currency: 'USD',
+          value,
+        })
+        sessionStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify({ tier: target, cadence, value }))
         window.location.href = data.url
       } else {
         setError(data?.error ?? 'Could not start checkout — try again.')
