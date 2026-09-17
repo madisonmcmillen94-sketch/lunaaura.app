@@ -17,9 +17,11 @@ import Breathe from './pages/Breathe'
 import Synastry from './pages/Synastry'
 import Companion from './pages/Companion'
 
-// Everything except signing in, signing up and the pricing page needs an
-// account. Pricing stays open so someone deciding whether to sign up can still
-// see what the tiers cost before committing.
+// Everything except signing in, signing up, the pricing page, and Learn needs
+// an account. Pricing stays open so someone deciding whether to sign up can
+// still see what the tiers cost before committing. Learn stays open because
+// it's public educational content -- keeping it gated would also keep it out
+// of Google's index.
 export default function App() {
   return (
     <AuthProvider>
@@ -86,22 +88,11 @@ export default function App() {
               </RequireAccount>
             }
           />
-          <Route
-            path="/learn"
-            element={
-              <RequireAccount>
-                <Learn />
-              </RequireAccount>
-            }
-          />
-          <Route
-            path="/learn/:slug"
-            element={
-              <RequireAccount>
-                <ArticlePage />
-              </RequireAccount>
-            }
-          />
+          {/* Learn is public on purpose: it's plain-language educational content
+              with no account-specific data, and keeping it out from behind the
+              login wall is what lets it get indexed and found via search. */}
+          <Route path="/learn" element={<Learn />} />
+          <Route path="/learn/:slug" element={<ArticlePage />} />
           <Route
             path="/admin"
             element={
