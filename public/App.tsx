@@ -1,0 +1,108 @@
+import { Route, Routes } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import Layout from './components/Layout'
+import OnboardingTour from './components/OnboardingTour'
+import RequireAccount from './components/RequireAccount'
+import Forecast from './pages/Forecast'
+import Journal from './pages/Journal'
+import Chart from './pages/Chart'
+import Learn from './pages/Learn'
+import ArticlePage from './pages/ArticlePage'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Patterns from './pages/Patterns'
+import Pricing from './pages/Pricing'
+import Admin from './pages/Admin'
+import Breathe from './pages/Breathe'
+import Synastry from './pages/Synastry'
+import Companion from './pages/Companion'
+
+// Everything except signing in, signing up, the pricing page, and Learn needs
+// an account. Pricing stays open so someone deciding whether to sign up can
+// still see what the tiers cost before committing. Learn stays open because
+// it's public educational content -- keeping it gated would also keep it out
+// of Google's index.
+export default function App() {
+  return (
+    <AuthProvider>
+      <OnboardingTour />
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/pricing" element={<Pricing />} />
+
+          <Route
+            path="/"
+            element={
+              <RequireAccount>
+                <Forecast />
+              </RequireAccount>
+            }
+          />
+          <Route
+            path="/journal"
+            element={
+              <RequireAccount>
+                <Journal />
+              </RequireAccount>
+            }
+          />
+          <Route
+            path="/chart"
+            element={
+              <RequireAccount>
+                <Chart />
+              </RequireAccount>
+            }
+          />
+          <Route
+            path="/breathe"
+            element={
+              <RequireAccount>
+                <Breathe />
+              </RequireAccount>
+            }
+          />
+          <Route
+            path="/synastry"
+            element={
+              <RequireAccount>
+                <Synastry />
+              </RequireAccount>
+            }
+          />
+          <Route
+            path="/companion"
+            element={
+              <RequireAccount>
+                <Companion />
+              </RequireAccount>
+            }
+          />
+          <Route
+            path="/patterns"
+            element={
+              <RequireAccount>
+                <Patterns />
+              </RequireAccount>
+            }
+          />
+          {/* Learn is public on purpose: it's plain-language educational content
+              with no account-specific data, and keeping it out from behind the
+              login wall is what lets it get indexed and found via search. */}
+          <Route path="/learn" element={<Learn />} />
+          <Route path="/learn/:slug" element={<ArticlePage />} />
+          <Route
+            path="/admin"
+            element={
+              <RequireAccount>
+                <Admin />
+              </RequireAccount>
+            }
+          />
+        </Route>
+      </Routes>
+    </AuthProvider>
+  )
+}

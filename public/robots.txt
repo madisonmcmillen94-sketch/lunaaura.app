@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://lunaaura-app.vercel.app/sitemap.xml
