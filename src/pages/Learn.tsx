@@ -1,7 +1,17 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { articles } from '../lib/articles'
+import { setPageMeta } from '../lib/pageMeta'
 
 export default function Learn() {
+  useEffect(() => {
+    return setPageMeta({
+      title: 'Learn — Moon Phases, Retrogrades & Earth Activity Explained | LunaAura',
+      description:
+        'Plain-language explainers on the astronomy and earth science behind LunaAura -- what’s established, what’s interpretation, and how to tell the difference.',
+    })
+  }, [])
+
   return (
     <div className="max-w-3xl mx-auto px-5 py-12">
       <h1 className="text-3xl font-display mb-2">Learn</h1>
