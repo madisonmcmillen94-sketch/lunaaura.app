@@ -1,9 +1,19 @@
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getArticle } from '../lib/articles'
+import { setPageMeta } from '../lib/pageMeta'
 
 export default function ArticlePage() {
   const { slug } = useParams()
   const article = slug ? getArticle(slug) : undefined
+
+  useEffect(() => {
+    if (!article) return
+    return setPageMeta({
+      title: `${article.title} | LunaAura`,
+      description: article.dek,
+    })
+  }, [article])
 
   if (!article) {
     return (
