@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { adminLookup, adminResetChart, adminStats, type AdminLookupResult, type AdminStats } from '../lib/adminApi'
+import { adminLookup, adminResetChart, adminSetTier, adminStats, type AdminLookupResult, type AdminStats } from '../lib/adminApi'
+
+const TIER_OPTIONS = ['free', 'plus', 'all_access'] as const
 
 // Founder-only page: customer lookup, a "force fix" for a stuck chart, and a
 // coarse usage snapshot. Client-side gating below is just UX (hide the page
@@ -85,6 +87,7 @@ function LookupPanel() {
   const [result, setResult] = useState<AdminLookupResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [resetting, setResetting] = useState(false)
+  const [updatingTier, setUpdatingTier] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -119,6 +122,22 @@ function LookupPanel() {
       setError(e instanceof Error ? e.message : 'Reset failed')
     } finally {
       setResetting(false)
+    }
+  }
+
+  async function handleSetTier(tier: (typeof TIER_OPTIONS)[number]) {
+    if (!result || tier === result.profile.tier) return
+    setUpdatingTier(true)
+    setError(null)
+    setNotice(null)
+    try {
+      const updated = await adminSetTier(result.uid, tier)
+      setNotice(`Tier set to ${updated.tier}.`)
+      setResult({ ...result, profile: { ...result.profile, tier: updated.tier } })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Tier update failed')
+    } finally {
+      setUpdatingTier(false)
     }
   }
 
@@ -164,7 +183,21 @@ function LookupPanel() {
           <div className="grid sm:grid-cols-3 gap-3 text-sm">
             <div>
               <p className="text-[#8e85a8] text-xs uppercase mb-1">Tier</p>
-              <p className="text-[#dcd6ec]">{result.profile.tier}</p>
+              <div className="flex items-center gap-2">
+                <select
+                  value={result.profile.tier}
+                  disabled={updatingTier}
+                  onChange={(e) => handleSetTier(e.target.value as (typeof TIER_OPTIONS)[number])}
+                  className="rounded-lg bg-black/30 border border-white/15 px-2 py-1 text-sm text-[#dcd6ec] outline-none focus:border-[#caa6ff]/60 disabled:opacity-60"
+                >
+                  {TIER_OPTIONS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                {updatingTier && <span className="text-xs text-[#8e85a8]">Saving…</span>}
+              </div>
             </div>
             <div>
               <p className="text-[#8e85a8] text-xs uppercase mb-1">Created</p>

@@ -67,6 +67,20 @@ export function adminResetChart(uid: string): Promise<AdminResetChartResult> {
   })
 }
 
+export interface AdminSetTierResult {
+  ok: true
+  uid: string
+  tier: 'free' | 'plus' | 'all_access'
+}
+
+export function adminSetTier(uid: string, tier: 'free' | 'plus' | 'all_access'): Promise<AdminSetTierResult> {
+  return authedFetch('/api/admin/set-tier', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uid, tier }),
+  })
+}
+
 export interface AdminStats {
   totalAccounts: number
   tierBreakdown: { free: number; plus: number; all_access: number; untagged: number }
