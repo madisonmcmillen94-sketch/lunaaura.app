@@ -5,11 +5,7 @@ import Layout from './components/Layout'
 import OnboardingTour from './components/OnboardingTour'
 import RequireAccount from './components/RequireAccount'
 
-// Route-level code splitting: each page ships as its own chunk, fetched only
-// when someone actually visits it, instead of one ~1MB bundle everyone
-// downloads up front regardless of which page they open. Chart.tsx (natal
-// chart math) and Admin.tsx are the biggest wins here since most visitors
-// never touch either.
+// Lazy loaded pages
 const Forecast = lazy(() => import('./pages/Forecast'))
 const Journal = lazy(() => import('./pages/Journal'))
 const Chart = lazy(() => import('./pages/Chart'))
@@ -24,9 +20,10 @@ const Breathe = lazy(() => import('./pages/Breathe'))
 const Synastry = lazy(() => import('./pages/Synastry'))
 const Companion = lazy(() => import('./pages/Companion'))
 
+// Import your new landing page (adjust the path if you saved it in /pages instead of /components)
+const LandingPage = lazy(() => import('./components/LandingPage'))
+
 function RouteFallback() {
-  // Matches RequireAccount's "One moment…" loading state so a lazy chunk
-  // fetch and an auth check look the same to whoever's waiting.
   return (
     <div className="max-w-2xl mx-auto px-5 py-24 text-center">
       <p className="text-sm text-[#8e85a8]">One moment…</p>
@@ -34,11 +31,6 @@ function RouteFallback() {
   )
 }
 
-// Everything except signing in, signing up, the pricing page, and Learn needs
-// an account. Pricing stays open so someone deciding whether to sign up can
-// still see what the tiers cost before committing. Learn stays open because
-// it's public educational content -- keeping it gated would also keep it out
-// of Google's index.
 export default function App() {
   return (
     <AuthProvider>
@@ -46,12 +38,17 @@ export default function App() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route element={<Layout />}>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/learn/:slug" element={<ArticlePage />} />
 
+            {/* Protected App Routes */}
             <Route
-              path="/"
+              path="/forecast"
               element={
                 <RequireAccount>
                   <Forecast />
@@ -106,11 +103,6 @@ export default function App() {
                 </RequireAccount>
               }
             />
-            {/* Learn is public on purpose: it's plain-language educational content
-                with no account-specific data, and keeping it out from behind the
-                login wall is what lets it get indexed and found via search. */}
-            <Route path="/learn" element={<Learn />} />
-            <Route path="/learn/:slug" element={<ArticlePage />} />
             <Route
               path="/admin"
               element={
