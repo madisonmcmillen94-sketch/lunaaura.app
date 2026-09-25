@@ -8,6 +8,7 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-KJDBBV2Q');</script>
     <!-- End Google Tag Manager -->
+    
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -16,19 +17,75 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="LunaAura" />
-    <title>LunaAura — Lunar, Planetary & Earth Rhythms for Your Nervous System</title>
-    <meta name="description" content="LunaAura tracks moon phases, planetary transits, and earth activity, translating them into daily guidance for your nervous system, self-knowledge, and diaspora spiritual practice." />
-    <meta property="og:title" content="LunaAura — Cosmic & Earth Rhythms for Your Nervous System" />
-    <meta property="og:description" content="Daily lunar, planetary, and earth-activity guidance for nervous system awareness and self-knowledge." />
+    
+    <!-- Updated SEO & Ad Targeting Metadata -->
+    <title>LunaAura | Somatic Healing, Astrology & Body-First Journal</title>
+    <meta name="description" content="Align your nervous system with planetary shifts. LunaAura offers somatic healing tools, daily cosmic guidance, and a body-first journal to regulate your physical and emotional energy." />
+    <meta name="keywords" content="somatic healing, nervous system regulation, astrology journal, planetary transits, holistic wellness, daily horoscope, body-first journal" />
+    
+    <!-- Open Graph for Meta/Instagram Ad Previews -->
+    <meta property="og:title" content="LunaAura | Somatic Astrology & Nervous System Regulation" />
+    <meta property="og:description" content="Use somatic tools and our body-first journal to stay grounded through every astrological shift. Discover your celestial blueprint today." />
     <meta property="og:type" content="website" />
-    <meta name="theme-color" content="#0b0a1f" />
+    <meta property="og:url" content="https://www.lunaaura.online/" />
+    <!-- Recommend adding an image tag here later for your ad previews: -->
+    <!-- <meta property="og:image" content="https://www.lunaaura.online/preview-image.jpg" /> -->
+    
+    <meta name="theme-color" content="#121417" />
+    
+    <!-- Loading Screen Styles -->
+    <style>
+      body {
+        margin: 0;
+        background-color: #121417; /* Matches the deep, grounded aesthetic */
+      }
+      #initial-loader {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-image: radial-gradient(circle at 50% 0%, #1f232b 0%, #121417 70%);
+        color: #bda282; /* Muted gold/earthy clay accent */
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        z-index: 9999;
+      }
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 2px solid rgba(189, 162, 130, 0.2);
+        border-top-color: #bda282;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .loader-text {
+        letter-spacing: 2px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        font-weight: 300;
+        color: #e2e2e4;
+      }
+    </style>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KJDBBV2Q"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <div id="root"></div>
+    
+    <div id="root">
+      <!-- This loader displays instantly, then React automatically replaces it when ready -->
+      <div id="initial-loader">
+        <div class="spinner"></div>
+        <div class="loader-text">Aligning Cosmos & Body...</div>
+      </div>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
