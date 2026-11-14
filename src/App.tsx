@@ -20,8 +20,7 @@ const Breathe = lazy(() => import('./pages/Breathe'))
 const Synastry = lazy(() => import('./pages/Synastry'))
 const Companion = lazy(() => import('./pages/Companion'))
 
-// Import your new landing page (adjust the path if you saved it in /pages instead of /components)
-const LandingPage = lazy(() => import('./components/LandingPage'))
+const LandingPage = lazy(() => import('../LandingPage'))
 
 function RouteFallback() {
   return (

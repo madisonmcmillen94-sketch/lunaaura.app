@@ -73,6 +73,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
+  let failureStage: 'firebase' | 'openai' | 'usage' = 'firebase'
+
   try {
     const db = getAdminDb()
 
@@ -110,6 +112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const openai = new OpenAI({ apiKey })
+    failureStage = 'openai'
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -127,6 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return
     }
 
+    failureStage = 'usage'
     await usageRef.set({ date: today, count: usedToday + 1, updatedAt: new Date().toISOString() })
 
     res.status(200).json({
@@ -134,7 +138,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       remaining: Math.max(0, DAILY_MESSAGE_LIMIT - (usedToday + 1)),
     })
   } catch (err) {
-    console.error('companion handler error', err)
+    console.error(`companion handler error during ${failureStage}`, err)
+    if (failureStage === 'openai') {
+      if (err instanceof OpenAI.APIError) {
+        if (err.status === 401) {
+          res.status(502).json({ error: 'OpenAI rejected the configured API key. Check OPENAI_API_KEY in Vercel.' })
+          return
+        }
+        if (err.status === 403) {
+          res.status(502).json({ error: 'OpenAI denied access to the configured model. Check its project permissions.' })
+          return
+        }
+        if (err.status === 429) {
+          res.status(503).json({ error: 'OpenAI is over its current limit. Check the API project billing and rate limits.' })
+          return
+        }
+      }
+      res.status(502).json({ error: 'OpenAI could not complete the request. Check the Vercel function logs and try again.' })
+      return
+    }
     res.status(500).json({ error: 'The companion is having a moment — try again shortly.' })
   }
 }

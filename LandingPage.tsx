@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import './LandingPage.css'; // We will create this next
+import { useState } from 'react';
+import './LandingPage.css';
 
 const LandingPage = () => {
   const [isYearly, setIsYearly] = useState(false);
