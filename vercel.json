@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/download-deepening.ts": {
+    "api/workbooks.ts": {
       "includeFiles": "assets/the-deepening-all-access-workbook.pdf"
     }
   },
