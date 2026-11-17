@@ -26,7 +26,7 @@ export default function Learn() {
     setDownloadError(null)
     try {
       const idToken = await user.getIdToken()
-      const res = await fetch('/api/download-deepening', {
+      const res = await fetch('/api/workbooks?action=download-deepening', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
