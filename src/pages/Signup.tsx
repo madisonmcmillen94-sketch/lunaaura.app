@@ -62,7 +62,7 @@ export default function Signup() {
     }
     setSubmitting(true)
     try {
-      await signUpWithEmail(email, password)
+      const user = await signUpWithEmail(email, password); /* Fire-and-forget: send the welcome email with the free guide. Failures are ignored so signup never breaks on email. */ void user.getIdToken().then((idToken) => fetch('/api/send-welcome-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken }) })).catch(() => {})
       setStep(2)
     } catch (e) {
       const code = (e as { code?: string }).code
