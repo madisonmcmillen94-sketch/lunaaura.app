@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/download-deepening.ts": {
+      "includeFiles": "assets/the-deepening-all-access-workbook.pdf"
+    }
+  },
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
