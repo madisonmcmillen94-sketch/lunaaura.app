@@ -3,6 +3,14 @@ import type { BirthInput, NatalChart } from '../lib/natal'
 import { loadNatalChart, saveBirthInput, clearNatalChart } from '../lib/natalStorage'
 import { findTransits, type TransitHit } from '../lib/transits'
 import { getSomaticGuidance } from '../lib/somatic'
+import {
+  BODY_MAP_CLOSING,
+  BODY_MAP_FOOTER,
+  BODY_MAP_INTRO,
+  BODY_MAP_RISING_PREFIX,
+  BODY_MAP_TITLE,
+  bodyFor,
+} from '../lib/bodyMap'
 import { formatDegree } from '../lib/zodiac'
 import PlaceSearch from '../components/PlaceSearch'
 import { utcOffsetMinutesFor, describeOffset } from '../lib/timezone'
@@ -314,6 +322,28 @@ export default function Chart() {
             </p>
           </section>
 
+          <section className="glow-card rounded-2xl p-6 mb-6">
+            <h2 className="text-lg font-display mb-2">{BODY_MAP_TITLE}</h2>
+            <p className="text-sm text-[#c9c2dd] leading-relaxed mb-4">{BODY_MAP_INTRO}</p>
+            <p className="text-sm text-[#dcd6ec] leading-relaxed">{BODY_MAP_RISING_PREFIX} Rising in {chart.ascendant.sign} — tradition maps {chart.ascendant.sign} to {bodyFor(chart.ascendant.sign).region}.</p>
+            <p className="text-sm text-[#b6acd1] mb-4"><span className="font-semibold text-[#e9d9ff]">Notice: </span>{bodyFor(chart.ascendant.sign).attention}</p>
+            <ul className="space-y-3 mb-4">
+              {chart.points.map((p) => {
+                const entry = bodyFor(p.sign)
+                return (
+                  <li key={p.name}>
+                    <p className="text-sm text-[#dcd6ec]">{p.name} in {p.sign} — tradition maps {p.sign} to {entry.region}.</p>
+                    {(p.name === 'Sun' || p.name === 'Moon') && (
+                      <p className="text-sm text-[#b6acd1]"><span className="font-semibold text-[#e9d9ff]">Notice: </span>{entry.attention}</p>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+            <p className="text-sm text-[#c9c2dd] leading-relaxed mb-3">{BODY_MAP_CLOSING}</p>
+            <p className="text-xs text-[#8e85a8] leading-relaxed">{BODY_MAP_FOOTER}</p>
+          </section>
+
           <section className="mb-6">
             <h2 className="text-lg font-display mb-1">Today, for you</h2>
             <p className="text-sm text-[#8e85a8] mb-4">
@@ -359,4 +389,3 @@ export default function Chart() {
     </div>
   )
 }
-
