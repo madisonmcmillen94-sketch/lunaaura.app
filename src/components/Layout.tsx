@@ -13,7 +13,7 @@ const mobileNavItem =
   'block w-full px-4 py-3 text-base rounded-xl transition-colors'
 
 const NAV_LINKS: { to: string; label: string; end?: boolean }[] = [
-  { to: '/', label: 'Forecast', end: true },
+  { to: '/forecast', label: 'Forecast', end: true },
   { to: '/journal', label: 'Journal' },
   { to: '/chart', label: 'Chart' },
   { to: '/synastry', label: 'Synastry' },
